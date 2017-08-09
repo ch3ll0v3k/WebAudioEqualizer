@@ -13,8 +13,8 @@
         }
 
         #canvas{
-            width: 800px; height: 240px; display: block; margin: 10px auto;
-            border-bottom: solid 5px #0F0; background: #000;
+            display: block; margin: 10px auto; background: #000;
+            /* border-bottom: solid 5px #0F0; */
         }
 
         .player-class{
@@ -31,8 +31,8 @@
 
             var allowDraw = false;
 
-            var WIDTH = 800;
-            var HEIGHT = 240;
+            var WIDTH = 1024;
+            var HEIGHT = 360;
 
             var canvas = document.getElementById('canvas');
             var ctx = canvas.getContext("2d");
@@ -41,6 +41,11 @@
             var audio = new Audio();
                 audio.controls = true;
                 audio.src = 'data/Axel.Thesleff-Bad.Karma.mp3';
+                audio.src = 'data/red-sun.mp3';
+                audio.src = 'data/shar.mp3';
+                audio.src = 'data/Gramatik-Talk-That-Slang.mp3';
+                audio.src = 'data/Баста-Сансара.mp3';
+               
                 audio.className = 'player-class';
 
                 audio.load();
@@ -93,14 +98,21 @@
             // distortion.connect( audioCtx.destination );
 
 
-            analyser.fftSize = 256 * 1;
+            analyser.fftSize = 256 * 2;
             var bufferLength = analyser.frequencyBinCount;
             var dataArray = new Uint8Array( bufferLength );
             // analyser.getByteTimeDomainData( dataArray );
             
-            var barWidth = (WIDTH / bufferLength) * 1.25; // 2.5;
+            var barWidth = (WIDTH / bufferLength); // * 1.25; // 2.5;
 
-            var drawBuffer = [];
+            var drawBuffer    = [];
+            var drawBufferMax = [];
+
+            var r = 255;
+            var g = 127;
+            var b = 0;
+
+            var init = false;
 
             function draw(){
 
@@ -108,67 +120,50 @@
 
                     // drawVisual = requestAnimationFrame(draw);
                     analyser.getByteFrequencyData(dataArray);
-                    for(var i = 0; i < bufferLength; i++)
+                    for(var i = 0; i < bufferLength; i++){
                         drawBuffer[ i ] = dataArray[i];
 
-                }
+                        if( !init ){
+                            drawBufferMax[i] = dataArray[i];
 
+                        }
+                    }
+
+                    init = true;
+
+                }
 
                 ctx.fillStyle = 'rgb(0, 0, 0)';
                 ctx.fillRect(0, 0, WIDTH, HEIGHT);
     
-                // ctx.strokeStyle = "#F00";
                 var x = 0;
-
-                var r = 0;
-                var g = 0;
-                var b = 0;
-
-                var byThisVal = 0;
 
                 for(var i = 0; i < bufferLength; i++ ) {
 
-                    // byThisVal = i * 10;
-                    byThisVal = drawBuffer[i] * 2;
 
-                    if (byThisVal < 50){
+                    var h = drawBuffer[i] * 0.65;
 
-                        r = 0;
-                        g = 0;
-                        b = byThisVal;
-
-                    }else if( byThisVal < 100){
-                        r = byThisVal;
-                        g = 0;
-                        b = byThisVal;
-
-                    }else if(byThisVal < 150){
-                        r = byThisVal;
-                        g = byThisVal/2;
-                        b = 0;
-
-                    }else if (byThisVal < 200){
-                        r = byThisVal;
-                        g = byThisVal;
-                        b = 0;
-
-                    } else{
-                        r = byThisVal;
-                        g = byThisVal/4;
-                        b = byThisVal/4;
-
+                    if( drawBufferMax[i] < h ){
+                        drawBufferMax[i] = h;
                     }
 
-                    ctx.fillStyle   = 'rgb( '+(r)+', '+(g)+', '+(b)+' )';
+                    ctx.fillStyle   = '#0F0';
+                    drawRect( x, HEIGHT - h, barWidth, h );
+
+                    ctx.fillStyle   = '#F00';
+                    drawRect( x, HEIGHT - drawBufferMax[ i ], barWidth, 2 );
 
 
-                    drawRect( x, HEIGHT - drawBuffer[i], barWidth, drawBuffer[i] ); //, 'rgb('++','+(barHeight+100)+',50)');
                     x += barWidth + 1;
 
-                    // drawBuffer[i] -= ( drawBuffer[i] / 100 * 5 );
+                    drawBufferMax[i] -= 0.2;
+
                     drawBuffer[i]--;
-                    if( drawBuffer[i] < 2 )
+                    if( drawBuffer[i] < 2 ){
                         drawBuffer[i] = 0;
+                        drawBufferMax[i] = 0;
+                    }
+
 
                 }
 
@@ -211,7 +206,7 @@
 </head>
 <body>
 <!-- ========================================================== -->
-<canvas id="canvas" width="800px" height="240px">
+<canvas id="canvas" width="1024px" height="360px">
     
 </canvas>
 
