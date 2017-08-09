@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+
+    <title>Audio API</title>
+    <meta charset="utf-8"/>
+
+    <style type="text/css">
+
+        html, body{
+            margin: 0; padding: 0; background: #000; text-align: center;
+
+        }
+
+        #canvas{
+            width: 800px; height: 240px; display: block; margin: 10px auto;
+            border-bottom: solid 5px #0F0; background: #000;
+        }
+
+        .player-class{
+            margin: 5px;
+        }
+
+
+    </style>
+
+
+    <script type="text/javascript">
+
+        window.addEventListener('load', function(){
+
+            var allowDraw = false;
+
+            var WIDTH = 800;
+            var HEIGHT = 240;
+
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext("2d");
+                ctx.strokeWidth = 1;
+
+            var audio = new Audio();
+                audio.controls = true;
+                audio.src = 'data/Axel.Thesleff-Bad.Karma.mp3';
+                audio.className = 'player-class';
+
+                audio.load();
+                audio.id = "mAudio";
+                // audio.style.display = 'none';
+
+                audio.onpause = function(e){ allowDraw = false; }
+                audio.onplay = function(e){ allowDraw = true; }
+
+
+
+            var audioBox = document.getElementById('audio-box');
+                audioBox.appendChild( audio );
+                // audioBox.appendChild( audio2 );
+
+
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            var analyser = audioCtx.createAnalyser();
+
+            // AnalyserNode.getFloatFrequencyData(); // capture data
+            // AnalyserNode.getByteFrequencyData(); // capture frequency data
+            // AnalyserNode.getByteTimeDomainData();  // capture waveform data. 
+            // AnalyserNode.getFloatTimeDomainData(); // capture waveform data.
+            // var playbackElement = document.getElementById("mAudio");
+
+            var stream = audio.mozCaptureStream();
+            // var stream = new MediaStream( capture );
+            // var stream = playbackElement.mozCaptureStream();
+            // playbackElement.play();
+
+
+
+            var player = new Audio();
+                player.controls = true;
+                player.src = window.URL.createObjectURL( stream );
+
+                audioBox.appendChild( player );
+                player.autoload = true;
+                player.className = 'player-class';
+                player.play();
+
+
+
+            // return;
+
+
+            var source = audioCtx.createMediaStreamSource( stream );
+                source.connect( analyser );
+            // analyser.connect( distortion );
+            // distortion.connect( audioCtx.destination );
+
+
+            analyser.fftSize = 256 * 1;
+            var bufferLength = analyser.frequencyBinCount;
+            var dataArray = new Uint8Array( bufferLength );
+            // analyser.getByteTimeDomainData( dataArray );
+            
+            var barWidth = (WIDTH / bufferLength) * 1.25; // 2.5;
+
+            var drawBuffer = [];
+
+            function draw(){
+
+                if( allowDraw ){
+
+                    // drawVisual = requestAnimationFrame(draw);
+                    analyser.getByteFrequencyData(dataArray);
+                    for(var i = 0; i < bufferLength; i++)
+                        drawBuffer[ i ] = dataArray[i];
+
+                }
+
+
+                ctx.fillStyle = 'rgb(0, 0, 0)';
+                ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    
+                // ctx.strokeStyle = "#F00";
+                var x = 0;
+
+                var r = 0;
+                var g = 0;
+                var b = 0;
+
+                var byThisVal = 0;
+
+                for(var i = 0; i < bufferLength; i++ ) {
+
+                    // byThisVal = i * 10;
+                    byThisVal = drawBuffer[i] * 2;
+
+                    if (byThisVal < 50){
+
+                        r = 0;
+                        g = 0;
+                        b = byThisVal;
+
+                    }else if( byThisVal < 100){
+                        r = byThisVal;
+                        g = 0;
+                        b = byThisVal;
+
+                    }else if(byThisVal < 150){
+                        r = byThisVal;
+                        g = byThisVal/2;
+                        b = 0;
+
+                    }else if (byThisVal < 200){
+                        r = byThisVal;
+                        g = byThisVal;
+                        b = 0;
+
+                    } else{
+                        r = byThisVal;
+                        g = byThisVal/4;
+                        b = byThisVal/4;
+
+                    }
+
+                    ctx.fillStyle   = 'rgb( '+(r)+', '+(g)+', '+(b)+' )';
+
+
+                    drawRect( x, HEIGHT - drawBuffer[i], barWidth, drawBuffer[i] ); //, 'rgb('++','+(barHeight+100)+',50)');
+                    x += barWidth + 1;
+
+                    // drawBuffer[i] -= ( drawBuffer[i] / 100 * 5 );
+                    drawBuffer[i]--;
+                    if( drawBuffer[i] < 2 )
+                        drawBuffer[i] = 0;
+
+                }
+
+                setTimeout( draw, 12 );
+
+            }
+
+            draw();
+
+
+            function drawRect( x0, y0, x1, y1 ){
+
+                // console.log( 'x0:'+x0, 'y0:'+y0, 'x1:'+x1, 'y1:'+y1, 'clr:'+clr );
+                // ctx.fillStyle   = clr;
+                // ctx.strokeStyle = "#555";
+                ctx.fillRect( x0, y0, x1, y1 );
+                ctx.stroke();
+
+            }
+
+            function drawLine( x0, y0, x1, y1 ){
+                
+                ctx.beginPath();
+                ctx.fillStyle     = "#CDA38D" ;
+                ctx.strokeStyle   = "#CDA38D" ;
+                ctx.moveTo( x0, y0 );
+                ctx.lineTo( x1, y1 );
+                ctx.stroke();
+
+            }
+
+
+        });
+
+
+
+
+    </script>
+
+</head>
+<body>
+<!-- ========================================================== -->
+<canvas id="canvas" width="800px" height="240px">
+    
+</canvas>
+
+<br/>
+
+<div id="audio-box"></div>
+
+    
+<!-- ========================================================== -->
+</body>
+</html>
