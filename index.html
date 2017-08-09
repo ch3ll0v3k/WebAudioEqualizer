@@ -41,10 +41,10 @@
             var audio = new Audio();
                 audio.controls = true;
                 audio.src = 'data/Axel.Thesleff-Bad.Karma.mp3';
-                audio.src = 'data/red-sun.mp3';
-                audio.src = 'data/shar.mp3';
-                audio.src = 'data/Gramatik-Talk-That-Slang.mp3';
-                audio.src = 'data/Баста-Сансара.mp3';
+                // audio.src = 'data/red-sun.mp3';
+                // audio.src = 'data/shar.mp3';
+                // audio.src = 'data/Gramatik-Talk-That-Slang.mp3';
+                // audio.src = 'data/Баста-Сансара.mp3';
                
                 audio.className = 'player-class';
 
@@ -143,9 +143,15 @@
 
                     var h = drawBuffer[i] * 0.65;
 
-                    if( drawBufferMax[i] < h ){
-                        drawBufferMax[i] = h;
+                    if( drawBufferMax[i] < h ) drawBufferMax[i] = h;
+
+                    /*
+                    for (var ii = 0; ii < h; ii++) {
+                        ctx.fillStyle   = 'rgb('+( ii*2 )+','+(ii * 3.5)+',0)';
+                        drawRect( x, HEIGHT - ii, barWidth, 1 );
+
                     }
+                    */
 
                     ctx.fillStyle   = '#0F0';
                     drawRect( x, HEIGHT - h, barWidth, h );
@@ -156,7 +162,7 @@
 
                     x += barWidth + 1;
 
-                    drawBufferMax[i] -= 0.2;
+                    drawBufferMax[i] -= 0.5;
 
                     drawBuffer[i]--;
                     if( drawBuffer[i] < 2 ){
